@@ -3,7 +3,7 @@ import { Space_Grotesk, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import ToasterDemo from "@/components/ui/toaster"
-import Navbar from "@/components/navbar" // Make sure Navbar is the correct path
+import ConditionalNavbar from "@/components/conditional-navbar"
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${spaceGrotesk.variable} ${dmSans.variable}`}>
       <body className="font-sans antialiased">
         <AuthProvider>
-          <Navbar />
+          <ConditionalNavbar />
           <main>{children}</main>
           <ToasterDemo />
         </AuthProvider>

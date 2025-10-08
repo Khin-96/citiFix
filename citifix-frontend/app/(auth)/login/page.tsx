@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
@@ -16,30 +14,34 @@ import { MapPin } from "lucide-react"
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+
+  const { user, login, loading: authLoading } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
+  // Redirect automatically if already logged in
+  useEffect(() => {
+    if (user) router.replace("/issues")
+  }, [user, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
     try {
-      await login(email, password)
+      const loggedInUser = await login(email, password)
+
       toast({
         title: "Welcome back!",
-        description: "You have successfully logged in.",
+        description: `Logged in as ${loggedInUser.name}`,
       })
-      router.push("/issues")
+
+      router.replace("/issues")
     } catch (error) {
       toast({
         title: "Login failed",
         description: error instanceof Error ? error.message : "Invalid credentials",
         variant: "destructive",
       })
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -63,7 +65,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -79,8 +81,8 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <Button type="submit" className="w-full" disabled={authLoading}>
+              {authLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -16,6 +17,7 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'role' => 'sometimes|string|in:citizen,officer',
         ]);
 
         $user = User::create([
@@ -25,14 +27,16 @@ class AuthController extends Controller
             'points' => 0,
         ]);
 
-        // Assign default role
-        $user->assignRole('citizen');
+        // Assign role
+        $role = $validated['role'] ?? 'citizen';
+        $user->assignRole($role);
 
+        // Create token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'message' => 'User registered successfully',
-            'user' => $user,
+            'user' => $user->load('roles'),
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 201);
@@ -75,7 +79,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json([
-            'user' => $request->user()->load('roles', 'permissions'),
+            'user' => $request->user()->load('roles'),
         ]);
     }
 }

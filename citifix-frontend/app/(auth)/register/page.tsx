@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
@@ -18,23 +16,43 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [role, setRole] = useState("citizen")
   const [loading, setLoading] = useState(false)
-  const { register } = useAuth()
+
+  const { user, register, refreshUser } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) router.replace("/issues")
+  }, [user, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (password !== confirmPassword) {
+      toast({
+        title: "Registration failed",
+        description: "Passwords do not match",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
 
     try {
-      await register(name, email, password, role)
+      await register(name, email, password) // Register via AuthContext
+      await refreshUser()                   // Refresh user state after registration
+
       toast({
         title: "Account created!",
         description: "Welcome to citiFix. Start reporting issues in your community.",
       })
-      router.push("/issues")
+
+      router.replace("/issues")
     } catch (error) {
       toast({
         title: "Registration failed",
@@ -66,7 +84,7 @@ export default function RegisterPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="John Doe"
+                placeholder="Enter your full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -77,7 +95,7 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="Your Email goes here"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -88,8 +106,21 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
               />
