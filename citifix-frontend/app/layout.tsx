@@ -25,10 +25,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${dmSans.variable}`}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased bg-black text-white">
         <AuthProvider>
           <ConditionalNavbar />
-          <main>{children}</main>
+          <main className="pt-20">{children}</main>
           <ToasterDemo />
         </AuthProvider>
       </body>
