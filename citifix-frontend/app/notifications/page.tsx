@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { api, type Notification } from "@/lib/api"
-import NavbarWrapper from "@/components/navbar-wrapper"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -19,6 +18,7 @@ export default function NotificationsPage() {
   const { toast } = useToast()
   const router = useRouter()
 
+  // Redirect to login if not authenticated
   useEffect(() => {
     if (!authLoading && !user) router.push("/login")
   }, [user, authLoading, router])
@@ -64,7 +64,6 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavbarWrapper />
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">

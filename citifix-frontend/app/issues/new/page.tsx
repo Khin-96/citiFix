@@ -1,12 +1,10 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
 import { api } from "@/lib/api"
-import Navbar from "@/components/navbar-wrapper"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,27 +31,19 @@ export default function NewIssuePage() {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login")
-    }
+    if (!authLoading && !user) router.push("/login")
   }, [user, authLoading, router])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || [])
-    const newFiles = [...files, ...selectedFiles].slice(0, 5) // Max 5 files
-
+    const newFiles = [...files, ...selectedFiles].slice(0, 5)
     setFiles(newFiles)
-
-    // Generate previews
-    const newPreviews = newFiles.map((file) => URL.createObjectURL(file))
-    setPreviews(newPreviews)
+    setPreviews(newFiles.map((file) => URL.createObjectURL(file)))
   }
 
   const removeFile = (index: number) => {
-    const newFiles = files.filter((_, i) => i !== index)
-    const newPreviews = previews.filter((_, i) => i !== index)
-    setFiles(newFiles)
-    setPreviews(newPreviews)
+    setFiles(files.filter((_, i) => i !== index))
+    setPreviews(previews.filter((_, i) => i !== index))
   }
 
   const getCurrentLocation = () => {
@@ -65,8 +55,6 @@ export default function NewIssuePage() {
           const lng = position.coords.longitude.toString()
           setLatitude(lat)
           setLongitude(lng)
-
-          // Reverse geocode to get address (simplified)
           try {
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
@@ -78,7 +66,7 @@ export default function NewIssuePage() {
           }
           setGettingLocation(false)
         },
-        (error) => {
+        () => {
           toast({
             title: "Location Error",
             description: "Failed to get your location. Please enter manually.",
@@ -110,17 +98,11 @@ export default function NewIssuePage() {
       formData.append("address", address)
       formData.append("latitude", latitude)
       formData.append("longitude", longitude)
-
-      files.forEach((file, index) => {
-        formData.append(`media[${index}]`, file)
-      })
+      files.forEach((file, index) => formData.append(`media[${index}]`, file))
 
       const data = await api.createIssue(formData)
 
-      toast({
-        title: "Issue Reported!",
-        description: "Your issue has been successfully submitted.",
-      })
+      toast({ title: "Issue Reported!", description: "Your issue has been successfully submitted." })
 
       router.push(`/issues/${data.data.id}`)
     } catch (error) {
@@ -134,18 +116,19 @@ export default function NewIssuePage() {
     }
   }
 
-  if (authLoading || !user) {
-    return null
-  }
+  if (authLoading || !user) return null
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-3xl">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-[family-name:var(--font-space-grotesk)]">Report an Issue</CardTitle>
-            <CardDescription>Help improve your community by reporting issues that need attention</CardDescription>
+            <CardTitle className="text-2xl font-[family-name:var(--font-space-grotesk)]">
+              Report an Issue
+            </CardTitle>
+            <CardDescription>
+              Help improve your community by reporting issues that need attention
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -248,14 +231,7 @@ export default function NewIssuePage() {
               <div className="space-y-2">
                 <Label>Photos/Videos (Optional)</Label>
                 <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  <input
-                    type="file"
-                    id="media"
-                    accept="image/*,video/*"
-                    multiple
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
+                  <input type="file" id="media" accept="image/*,video/*" multiple onChange={handleFileChange} className="hidden" />
                   <label htmlFor="media" className="cursor-pointer">
                     <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
                     <p className="text-sm text-muted-foreground">Click to upload photos or videos (max 5 files)</p>
@@ -267,11 +243,7 @@ export default function NewIssuePage() {
                   <div className="grid grid-cols-3 gap-4 mt-4">
                     {previews.map((preview, index) => (
                       <div key={index} className="relative group">
-                        <img
-                          src={preview || "/placeholder.svg"}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-32 object-cover rounded"
-                        />
+                        <img src={preview || "/placeholder.svg"} alt={`Preview ${index + 1}`} className="w-full h-32 object-cover rounded" />
                         <button
                           type="button"
                           onClick={() => removeFile(index)}

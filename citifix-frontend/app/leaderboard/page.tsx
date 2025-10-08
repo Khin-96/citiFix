@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth-context"
 import { api, type User } from "@/lib/api"
-import Navbar from "@/components/navbar-wrapper"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -20,15 +19,11 @@ export default function LeaderboardPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login")
-    }
+    if (!authLoading && !user) router.push("/login")
   }, [user, authLoading, router])
 
   useEffect(() => {
-    if (user) {
-      fetchLeaderboard()
-    }
+    if (user) fetchLeaderboard()
   }, [user, period])
 
   async function fetchLeaderboard() {
@@ -47,9 +42,7 @@ export default function LeaderboardPage() {
     }
   }
 
-  if (authLoading || !user) {
-    return null
-  }
+  if (authLoading || !user) return null
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-6 w-6 text-yellow-500" />
@@ -59,17 +52,17 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="flex items-center justify-between mb-8">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-[family-name:var(--font-space-grotesk)]">Leaderboard</h1>
-            <p className="text-muted-foreground mt-1">Top contributors in your community</p>
+            <h1 className="text-3xl font-bold font-[family-name:var(--font-space-grotesk)] text-gray-900">Leaderboard</h1>
+            <p className="text-gray-600 mt-1">Top contributors in your community</p>
           </div>
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
+            <SelectTrigger className="w-48 text-gray-900">
+              <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="week">This Week</SelectItem>
@@ -80,15 +73,16 @@ export default function LeaderboardPage() {
           </Select>
         </div>
 
+        {/* Leaderboard List */}
         {loading ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading leaderboard...</p>
+            <p className="text-gray-500">Loading leaderboard...</p>
           </div>
         ) : leaderboard.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No leaderboard data available</p>
+              <Trophy className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">No leaderboard data available</p>
             </CardContent>
           </Card>
         ) : (
@@ -97,38 +91,45 @@ export default function LeaderboardPage() {
               <Card
                 key={member.id}
                 className={`transition-all ${
-                  member.id === user.id ? "border-primary shadow-md" : ""
-                } ${index < 3 ? "bg-gradient-to-r from-primary/5 to-transparent" : ""}`}
+                  member.id === user.id ? "border-primary shadow-lg bg-primary/10" : "bg-white shadow-sm"
+                } ${index < 3 ? "bg-gradient-to-r from-yellow-50 to-white" : ""}`}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-muted flex-shrink-0">
+                <CardContent className="p-6 flex flex-col md:flex-row md:items-center gap-4">
+                  <div className="flex items-center gap-4 flex-shrink-0">
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-yellow-100">
                       {getRankIcon(index + 1)}
                     </div>
-                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 flex-shrink-0">
-                      <UserIcon className="h-6 w-6 text-primary" />
+                    <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-200">
+                      <UserIcon className="h-6 w-6 text-gray-700" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">{member.name}</h3>
-                        {member.id === user.id && (
-                          <Badge variant="outline" className="text-xs">
-                            You
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {member.role}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold text-lg text-gray-900">{member.name}</h3>
+                      {member.id === user.id && (
+                        <Badge variant="outline" className="text-xs">
+                          You
                         </Badge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{member.email}</p>
+                      )}
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {member.role}
+                      </Badge>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-2">
-                        <Award className="h-5 w-5 text-primary" />
-                        <span className="text-2xl font-bold text-primary">{member.points || 0}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">points</p>
+                    <p className="text-sm text-gray-600">{member.email}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Issues Reported: <span className="font-medium">{member.issues_reported || 0}</span> | Resolved:{" "}
+                      <span className="font-medium">{member.issues_resolved || 0}</span> | Last Active:{" "}
+                      <span className="font-medium">{member.last_active || "N/A"}</span>
+                    </p>
+                  </div>
+
+                  <div className="text-right flex-shrink-0">
+                    <div className="flex items-center gap-2 justify-end">
+                      <Award className="h-5 w-5 text-primary" />
+                      <span className="text-2xl font-bold text-primary">{member.points || 0}</span>
                     </div>
+                    <p className="text-xs text-gray-500">points</p>
                   </div>
                 </CardContent>
               </Card>
@@ -142,16 +143,14 @@ export default function LeaderboardPage() {
             <CardHeader>
               <CardTitle className="text-lg font-[family-name:var(--font-space-grotesk)]">Your Rank</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Position</p>
-                  <p className="text-3xl font-bold">#{leaderboard.findIndex((m) => m.id === user.id) + 1 || "N/A"}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Your Points</p>
-                  <p className="text-3xl font-bold text-primary">{user.points || 0}</p>
-                </div>
+            <CardContent className="flex justify-between items-center">
+              <div>
+                <p className="text-sm text-gray-500">Current Position</p>
+                <p className="text-3xl font-bold">#{leaderboard.findIndex((m) => m.id === user.id) + 1 || "N/A"}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Your Points</p>
+                <p className="text-3xl font-bold text-primary">{user.points || 0}</p>
               </div>
             </CardContent>
           </Card>
